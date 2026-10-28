@@ -1,0 +1,47 @@
+package com.example.ritmo.data.db
+
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "playlists")
+data class PlaylistEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val name: String,
+    val createdAt: Long,
+    val updatedAt: Long,
+)
+
+/** Uma linha por música dentro da playlist. `entryId` identifica a posição, mesmo com músicas repetidas. */
+@Entity(
+    tableName = "playlist_songs",
+    foreignKeys = [
+        ForeignKey(
+            entity = PlaylistEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["playlistId"],
+            onDelete = ForeignKey.CASCADE,
+        )
+    ],
+    indices = [Index("playlistId")],
+)
+data class PlaylistSongEntity(
+    @PrimaryKey(autoGenerate = true) val entryId: Long = 0,
+    val playlistId: Long,
+    val songId: Long,
+    val position: Int,
+)
+
+@Entity(tableName = "favorites")
+data class FavoriteEntity(
+    @PrimaryKey val songId: Long,
+    val addedAt: Long,
+)
+
+@Entity(tableName = "play_stats")
+data class PlayStatEntity(
+    @PrimaryKey val songId: Long,
+    val playCount: Int,
+    val lastPlayedAt: Long,
+)
