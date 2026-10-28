@@ -1,3 +1,4 @@
+
 name: Gerar APK do Ritmo
 
 on:
@@ -26,12 +27,9 @@ jobs:
           java-version: '17'
 
       - name: Configurar Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Instalar Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: android-actions/setup-android@v4
         with:
-          gradle-version: '8.9'
+          packages: 'platform-tools'
 
       - name: Localizar projeto Kotlin
         id: projeto
@@ -50,13 +48,24 @@ jobs:
       - name: Compilar APK
         shell: bash
         run: |
-          gradle -p "${{ steps.projeto.outputs.dir }}" assembleDebug --no-daemon
+          set -e
+          PROJECT_DIR="${{ steps.projeto.outputs.dir }}"
+          cd "$PROJECT_DIR"
+
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+            ./gradlew assembleDebug --no-daemon
+          else
+            echo "ERRO: gradlew não encontrado na pasta do projeto."
+            echo "O projeto precisa incluir o Gradle Wrapper."
+            exit 1
+          fi
 
       - name: Publicar APK para download
         uses: actions/upload-artifact@v4
         with:
           name: Ritmo-APK
           path: |
-            **/app/build/outputs/apk/debug/*.apk
+            **/build/outputs/apk/debug/*.apk
           if-no-files-found: error
           retention-days: 7
